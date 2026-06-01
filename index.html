@@ -177,9 +177,18 @@ table.rev-table td:not(:first-child){text-align:right}
 .parcela-chip .rm-chip{background:none;border:none;color:var(--vermelho);cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 2px}
 .avista-btn{display:inline-flex;align-items:center;gap:4px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:5px 12px;border:1.5px solid var(--cinza-borda);border-radius:20px;background:#fff;color:var(--cinza-texto);cursor:pointer;transition:all .15s}
 .avista-btn.active{background:var(--azul);border-color:var(--azul);color:#fff}
+
+/* ── PRINT ── */
+#print-overlay{display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow-y:auto;padding:28px 32px}
+@media print{
+  #app{display:none!important}
+  #print-overlay{display:block!important;position:static!important;padding:18px 22px}
+  @page{margin:1cm;size:A4}
+}
 </style>
 </head>
 <body>
+<div id="print-overlay"></div>
 <div id="app">
 
 <!-- TOPBAR -->
@@ -935,23 +944,24 @@ ${obs?`<div class="sec">Observações</div><div class="obs-box">${obs}</div>`:''
 <div class="rodape">
   Ley Colchões — Documento gerado em ${new Date().toLocaleString('pt-BR')} — ${numPedido} — Tabela Representantes Jun/2026
 </div>
-<script>window.onload=function(){window.print();}<\/script>
 </body></html>`;
 
-  // Salva no histórico
+  // Salva no histórico antes de imprimir
   const hist = JSON.parse(localStorage.getItem('ley_hist')||'[]');
-  hist.unshift({
-    num:numPedido, data:dataPedido, cliente:razao,
-    total:tot, itens:items.length,
-    ts:Date.now()
-  });
+  hist.unshift({num:numPedido,data:dataPedido,cliente:razao,total:tot,itens:items.length,ts:Date.now()});
   localStorage.setItem('ley_hist', JSON.stringify(hist.slice(0,50)));
   localStorage.setItem('ley_seq', String(sequencial));
   sequencial++;
 
-  const w=window.open('','_blank');
-  if(w){w.document.write(html);w.document.close();}
-  else{alert('Habilite pop-ups no navegador para gerar o PDF.');}
+  // Injeta o HTML do pedido no overlay e imprime (funciona no celular sem pop-up)
+  const overlay = document.getElementById('print-overlay');
+  overlay.innerHTML = html;
+  overlay.style.display = 'block';
+  setTimeout(()=>{
+    window.print();
+    // Após impressão, remove overlay
+    setTimeout(()=>{ overlay.style.display='none'; overlay.innerHTML=''; }, 1000);
+  }, 300);
 }
 
 // ═══════ HISTÓRICO ═══════
