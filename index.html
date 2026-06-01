@@ -58,16 +58,7 @@ a{color:inherit;text-decoration:none}
 
 /* ── HISTÓRICO ── */
 #historico{padding:20px}
-.hist-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-.hist-header h3{font-size:16px;font-weight:600}
-.hist-empty{text-align:center;color:var(--cinza-texto);padding:40px 20px;font-size:14px}
-.hist-item{background:#fff;border:0.5px solid var(--cinza-borda);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow .15s}
-.hist-item:hover{box-shadow:var(--sombra)}
-.hist-item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.hist-item-num{font-size:13px;font-weight:600;color:var(--azul-claro)}
-.hist-item-date{font-size:11px;color:var(--cinza-texto)}
-.hist-item-client{font-size:14px;font-weight:500;margin-bottom:2px}
-.hist-item-total{font-size:13px;color:var(--verde-ok);font-weight:500}
+
 
 /* ── PEDIDO — STEPS ── */
 .steps-bar{background:#fff;border-bottom:1px solid var(--cinza-borda);padding:0 16px;display:flex;overflow-x:auto;scrollbar-width:none;position:sticky;top:58px;z-index:90}
@@ -215,29 +206,11 @@ table.rev-table td:not(:first-child){text-align:right}
       <div class="hc-title">Novo Pedido</div>
       <div class="hc-sub">Iniciar pedido do zero</div>
     </div>
-    <div class="home-card" onclick="showScreen('historico')">
-      <div class="hc-icon">📂</div>
-      <div class="hc-title">Histórico</div>
-      <div class="hc-sub">Pedidos anteriores</div>
-    </div>
-    <div class="home-card" onclick="limparTudo()">
-      <div class="hc-icon">🗑️</div>
-      <div class="hc-title">Limpar tudo</div>
-      <div class="hc-sub">Apagar histórico</div>
-    </div>
+
   </div>
 </div>
 
-<!-- ══════════════ HISTÓRICO ══════════════ -->
-<div id="historico" class="screen" style="padding:0">
-  <div style="padding:16px 20px;border-bottom:1px solid var(--cinza-borda);background:#fff;display:flex;align-items:center;gap:10px">
-    <button class="btn btn-sm" onclick="showScreen('home')">← Voltar</button>
-    <strong style="font-size:15px">Histórico de Pedidos</strong>
-  </div>
-  <div style="padding:16px 20px;flex:1;overflow-y:auto" id="hist-list">
-    <div class="hist-empty">Nenhum pedido salvo ainda.</div>
-  </div>
-</div>
+
 
 <!-- ══════════════ PEDIDO ══════════════ -->
 <div id="pedido" class="screen" style="padding:0">
@@ -569,7 +542,7 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   document.getElementById('btn-voltar-home').style.display = id==='home'?'none':'block';
   document.getElementById('badge-num').style.display = id==='pedido'?'inline':'none';
-  if(id==='historico') renderHistorico();
+  
 }
 
 // ═══════ NOVO PEDIDO ═══════
@@ -946,10 +919,6 @@ ${obs?`<div class="sec">Observações</div><div class="obs-box">${obs}</div>`:''
 </div>
 </body></html>`;
 
-  // Salva no histórico antes de imprimir
-  const hist = JSON.parse(localStorage.getItem('ley_hist')||'[]');
-  hist.unshift({num:numPedido,data:dataPedido,cliente:razao,total:tot,itens:items.length,ts:Date.now()});
-  localStorage.setItem('ley_hist', JSON.stringify(hist.slice(0,50)));
   localStorage.setItem('ley_seq', String(sequencial));
   sequencial++;
 
@@ -964,31 +933,6 @@ ${obs?`<div class="sec">Observações</div><div class="obs-box">${obs}</div>`:''
   }, 300);
 }
 
-// ═══════ HISTÓRICO ═══════
-function renderHistorico(){
-  const hist=JSON.parse(localStorage.getItem('ley_hist')||'[]');
-  const el=document.getElementById('hist-list');
-  if(!hist.length){el.innerHTML='<div class="hist-empty">📭 Nenhum pedido salvo ainda.<br><small>Os pedidos aparecem aqui após gerar o PDF.</small></div>';return;}
-  el.innerHTML=hist.map(h=>`
-    <div class="hist-item">
-      <div class="hist-item-top">
-        <span class="hist-item-num">${h.num}</span>
-        <span class="hist-item-date">${h.data}</span>
-      </div>
-      <div class="hist-item-client">${h.cliente}</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-        <span class="hist-item-total">${fmtR(h.total)}</span>
-        <span style="font-size:11px;color:var(--cinza-texto)">${h.itens} ${h.itens===1?'item':'itens'}</span>
-      </div>
-    </div>`).join('');
-}
-
-function limparTudo(){
-  if(confirm('Apagar todo o histórico de pedidos?')){
-    localStorage.removeItem('ley_hist');
-    localStorage.removeItem('ley_seq');
-    sequencial=1;
-  }
 }
 
 // ═══════ UTILS ═══════
